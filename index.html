@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#100c20"><title>Numzo — OTP numbers</title>
+<style>
+:root{color-scheme:dark;--bg:#100c20;--panel:#1a1530;--line:#34294f;--muted:#b4aacb;--purple:#a78bfa;--white:#fbfaff;--green:#72e3bd}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#251742 0,var(--bg) 52%);color:var(--white);font:16px system-ui,-apple-system,sans-serif;min-height:100vh}.wrap{max-width:760px;margin:auto;padding:22px 16px 100px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:900;font-size:26px;letter-spacing:-1px}.brand span{color:var(--purple)}.pill{border:1px solid var(--line);padding:7px 10px;border-radius:99px;color:var(--muted);font-size:12px}.hero{padding:30px 0 18px}.eyebrow{color:var(--green);font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase}.hero h1{font-size:clamp(32px,8vw,48px);line-height:1.04;margin:12px 0}.hero p{color:var(--muted);line-height:1.55;max-width:520px}.panel{background:rgba(26,21,48,.9);border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:16px;box-shadow:0 16px 50px #0002}.label{display:block;color:#d8d0e8;font-size:13px;margin:14px 0 8px}select,input{width:100%;background:#100c20;color:white;border:1px solid #44365f;border-radius:12px;padding:14px;font-size:16px;outline:none}button{border:0;border-radius:13px;padding:14px 16px;font-size:15px;font-weight:800;cursor:pointer}.primary{width:100%;background:linear-gradient(100deg,#a78bfa,#8b5cf6);color:#170d2b;margin-top:18px}.secondary{background:#29213e;color:#eee6ff;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.price{font-size:24px;font-weight:900;margin:8px 0}.muted{color:var(--muted);font-size:13px;line-height:1.5}.notice{border:1px solid #59482b;background:#261f16;color:#ffe0a1;border-radius:12px;padding:12px;font-size:13px;line-height:1.5;margin-top:14px}.status{display:flex;gap:9px;align-items:center}.dot{width:8px;height:8px;background:var(--green);border-radius:50%}.hidden{display:none}.order{border:1px solid var(--line);border-radius:14px;padding:13px;margin-top:10px}.order b{display:block}.tabbar{position:fixed;bottom:0;left:0;right:0;background:#100c20ee;backdrop-filter:blur(15px);border-top:1px solid var(--line);display:flex;justify-content:center;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom))}.tabbar button{background:transparent;color:var(--muted);flex:1;max-width:220px}.tabbar button.active{background:#29213e;color:white}.tiny{font-size:11px;color:#9186aa;margin-top:18px;text-align:center}@media(min-width:600px){.grid{grid-template-columns:repeat(2,1fr)}.panel{padding:22px}}
+</style></head><body><main class="wrap"><header class="top"><div class="brand">num<span>zo</span></div><div class="pill">EARLY ACCESS</div></header>
+<section class="hero"><div class="eyebrow">OTP, made simple</div><h1>Your number.<br>One simple place.</h1><p>Choose a country and service, track your order, and receive your SMS in one place.</p></section>
+<section id="buy" class="panel"><div class="status"><span class="dot"></span><strong>Number marketplace</strong></div><p class="muted">Country list and supplier availability load from 5SIM public endpoints. No purchases or payments are enabled in this build.</p><label class="label" for="country">Choose country</label><select id="country"><option value="usa">United States (if available)</option><option value="england">England</option></select><label class="label" for="service">Choose service</label><select id="service"><option value="whatsapp">WhatsApp</option><option value="telegram">Telegram</option><option value="google">Google / YouTube</option><option value="other">Other supported service</option></select><div class="grid"><div><div class="label">Lowest supplier price</div><div class="price" id="price">—</div><div class="muted" id="priceNote">Loading live offers… supplier currency not converted</div></div><div><div class="label">Supplier connection</div><div class="price" style="font-size:17px" id="stock">—</div><div class="muted" id="stockNote">Loading supplier stock…</div></div></div><button class="primary" id="orderBtn">Refresh live availability</button><div id="feedback" class="notice">Live prices and stock only. Buying numbers is intentionally disabled until account permission, secure order storage and payment verification are ready.</div></section>
+<section id="orders" class="panel hidden"><strong>Your orders</strong><p class="muted">Orders will appear here after secure account and supplier integration are complete.</p><div class="order"><b>No live orders yet</b><span class="muted">This starter does not create fake purchases.</span></div></section>
+<section id="account" class="panel hidden"><strong>Numzo status</strong><p class="muted">Backend health check shows whether a supplier key is configured. It never reveals the key itself.</p><button class="secondary" id="healthBtn" style="width:100%;margin-top:12px">Check backend status</button><pre id="health" class="muted" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre><div class="notice">Real purchases must remain disabled until supplier resale permission, API protocol, pricing, payment verification, refunds and abuse prevention are checked.</div></section>
+<p class="tiny">Numzo • Built for mobile • Never share your supplier API key</p></main><nav class="tabbar"><button class="active" data-page="buy">Explore</button><button data-page="orders">Orders</button><button data-page="account">Status</button></nav>
+<script>
+const country=document.querySelector('#country');
+const service=document.querySelector('#service');
+const price=document.querySelector('#price');
+const priceNote=document.querySelector('#priceNote');
+const stock=document.querySelector('#stock');
+const stockNote=document.querySelector('#stockNote');
+let countrySlugs=[];
+function productMatches(product, selected){
+  const p=product.toLowerCase();
+  const aliases={whatsapp:['whatsapp'],telegram:['telegram'],google:['google','youtube'],other:[]};
+  return selected==='other' ? !['whatsapp','telegram','google','youtube'].some(x=>p.includes(x)) : aliases[selected].some(x=>p.includes(x));
+}
+async function loadCountries(){
+  try {
+    const r=await fetch('/api/countries',{cache:'no-store'}); if(!r.ok) throw new Error();
+    const d=await r.json(); countrySlugs=d.countries||[];
+    const previous=country.value;
+    country.replaceChildren();
+    for(const c of countrySlugs){const o=document.createElement('option');o.value=c.slug;o.textContent=c.name;country.append(o)}
+    if(countrySlugs.some(c=>c.slug===previous)) country.value=previous;
+    await loadPrices();
+  } catch { price.textContent='Unavailable'; priceNote.textContent='Could not load live country list. Deploy the backend and try again.'; stock.textContent='—'; stockNote.textContent='Supplier unavailable'; }
+}
+async function loadPrices(){
+  price.textContent='…'; priceNote.textContent='Checking live supplier prices'; stock.textContent='…'; stockNote.textContent='Checking available numbers';
+  try {
+    const r=await fetch('/api/prices?country='+encodeURIComponent(country.value),{cache:'no-store'}); const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Supplier unavailable');
+    const matches=(d.products||[]).filter(p=>productMatches(p.product,service.value));
+    const offers=matches.flatMap(p=>p.offers.map(o=>({...o,product:p.product}))).sort((a,b)=>a.cost-b.cost);
+    if(!offers.length){price.textContent='No stock';priceNote.textContent='No available offers matched this service in this country.';stock.textContent='0';stockNote.textContent='Available numbers for matching products';return}
+    const cheapest=offers[0];
+    price.textContent=cheapest.cost.toLocaleString(undefined,{maximumFractionDigits:4});
+    priceNote.textContent='Supplier price units (not ₦); '+cheapest.product+' / '+cheapest.operator+'. Configure verified FX and margin before retail pricing.';
+    stock.textContent=offers.reduce((n,o)=>n+o.count,0).toLocaleString();
+    stockNote.textContent='Available units across '+matches.length+' matching product(s). Availability can change.';
+    document.querySelector('#feedback').textContent='Supplier data fetched '+new Date(d.fetchedAt).toLocaleTimeString()+'. No number purchased and no payment taken.';
+  } catch(e){price.textContent='Unavailable';priceNote.textContent='Live supplier prices could not be loaded.';stock.textContent='—';stockNote.textContent='Could not verify stock';document.querySelector('#feedback').textContent=e.message||'Supplier unavailable. No purchase was made.'}
+}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-page]').forEach(x=>x.classList.toggle('active',x===b));['buy','orders','account'].forEach(id=>document.getElementById(id).classList.toggle('hidden',id!==b.dataset.page));}));
+country.addEventListener('change',loadPrices);service.addEventListener('change',loadPrices);document.querySelector('#orderBtn').addEventListener('click',loadPrices);
+document.querySelector('#healthBtn').addEventListener('click',async()=>{const out=document.querySelector('#health');out.textContent='Checking…';try{const r=await fetch('/api/health',{cache:'no-store'});out.textContent=JSON.stringify(await r.json(),null,2)}catch{out.textContent='Backend unavailable in local preview. Deploy this project to Vercel to test the backend.'}});
+loadCountries();
+</script></body></html>
